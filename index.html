@@ -156,14 +156,30 @@ let currentDate = new Date();
 
 // ===== Fetch Data =====
 async function loadData() {
-    const k = await fetch(SHEET_K_URL).then(r => r.text());
-    const p = await fetch(SHEET_P_URL).then(r => r.text());
+    try {
+        const kRes = await fetch(SHEET_K_URL);
+        console.log("K status:", kRes.status);
 
-    dataK = parseCSV(k);
-    dataP = parseCSV(p);
+        const kText = await kRes.text();
+        console.log("K raw:", kText);
 
-    renderWeek();
-    renderMonth();
+        const pRes = await fetch(SHEET_P_URL);
+        console.log("P status:", pRes.status);
+
+        const pText = await pRes.text();
+        console.log("P raw:", pText);
+
+        dataK = parseCSV(kText);
+        dataP = parseCSV(pText);
+
+        console.log("Parsed K:", dataK);
+        console.log("Parsed P:", dataP);
+
+        renderWeek();
+        renderMonth();
+    } catch (err) {
+        console.error("Fetch error:", err);
+    }
 }
 
 // ===== CSV Parser =====
