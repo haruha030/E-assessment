@@ -158,22 +158,11 @@ let currentDate = new Date();
 async function loadData() {
     try {
         const kRes = await fetch(SHEET_K_URL);
-        console.log("K status:", kRes.status);
-
         const kText = await kRes.text();
-        console.log("K raw:", kText);
-
         const pRes = await fetch(SHEET_P_URL);
-        console.log("P status:", pRes.status);
-
         const pText = await pRes.text();
-        console.log("P raw:", pText);
-
         dataK = parseCSV(kText);
         dataP = parseCSV(pText);
-
-        console.log("Parsed K:", dataK);
-        console.log("Parsed P:", dataP);
 
         renderWeek();
         renderMonth();
@@ -192,7 +181,7 @@ function parseCSV(text) {
         phone: r[0],
         grade: r[6],
         remark: r[4],
-        date: r[7],
+        date: normalizeDate(r[7]),
         hour: r[4],
         minute: r[5],
         status: r[12],
@@ -235,6 +224,21 @@ function renderWeek() {
 
     table += "</table>";
     container.innerHTML = table;
+}
+
+function normalizeDate(str) {
+    if (!str) return "";
+
+    // Match: 2026年4月10日
+    const match = str.match(/(\d{4})年(\d{1,2})月(\d{1,2})日/);
+
+    if (!match) return "";
+
+    const y = match[1];
+    const m = match[2].padStart(2, "0");
+    const d = match[3].padStart(2, "0");
+
+    return `${y}-${m}-${d}`;
 }
 
 function renderCell(data, date) {
