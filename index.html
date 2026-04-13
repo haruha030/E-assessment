@@ -4,11 +4,12 @@
 <meta charset="UTF-8">
 <title>Assessment Booking Manager</title>
 <style>
+
 body {
     margin: 0;
     font-family: Arial;
-    background: #1e293b;
-    color: white;
+    background: #f1f5f9;
+    color: #0f172a;
 }
 
 /* Layout */
@@ -19,25 +20,27 @@ body {
 
 .sidebar {
     width: 220px;
-    background: #0f172a;
+    background: #ffffff;
     padding: 20px;
 }
 
 .tab {
     padding: 12px;
     margin-bottom: 10px;
-    background: #1e293b;
+    background: #f8fafc;
+    color: #0f172a;
     cursor: pointer;
     border-radius: 8px;
 }
 
 .tab:hover {
-    background: #334155;
+    background: #e2e8f0;
 }
 
 .content {
     flex: 1;
     padding: 20px;
+    background: white;
 }
 
 /* Top Controls */
@@ -56,7 +59,13 @@ button {
     border-radius: 6px;
     cursor: pointer;
 }
+button.delete {
+    background: #ef4444;
+}
 
+button.update {
+    background: #22c55e;
+}
 button:hover {
     background: #2563eb;
 }
@@ -80,7 +89,8 @@ td, th {
 /* Booking button */
 .booking {
     display: block;
-    background: #22c55e;
+    background: #3b82f6;
+    color: white;
     margin: 4px 0;
     padding: 5px;
     border-radius: 5px;
@@ -120,6 +130,8 @@ td, th {
     <div class="sidebar">
         <div class="tab" onclick="showTab('week')">Weekly View</div>
         <div class="tab" onclick="showTab('month')">Monthly View</div>
+        <div class="tab" onclick="showTab('addK')">Add K</div>
+        <div class="tab" onclick="showTab('addP')">Add P</div>
     </div>
 
     <!-- Content -->
@@ -137,7 +149,61 @@ td, th {
 
         <!-- Monthly -->
         <div id="monthView" style="display:none;"></div>
+<div id="addK" style="display:none;">
+<h2>Add Booking (K)</h2>
 
+SID: <input id="k_sid"><br>
+Name: <input id="k_name"><br>
+Phone: <input id="k_phone"><br>
+
+Grade:
+<select id="k_grade">
+<option>P1</option>
+<option>P2</option>
+</select><br>
+
+Date: <input type="date" id="k_date"><br>
+Hour: <input id="k_hour"><br>
+Minute: <input id="k_min"><br>
+
+Status:
+<select id="k_status">
+<option>Pending</option>
+<option>Done</option>
+</select><br>
+
+Instructor: <input id="k_ins"><br>
+
+<button onclick="addRow('K')">Submit</button>
+</div>
+
+<div id="addP" style="display:none;">
+<h2>Add Booking (P)</h2>
+
+SID: <input id="p_sid"><br>
+Name: <input id="p_name"><br>
+Phone: <input id="p_phone"><br>
+
+Grade:
+<select id="p_grade">
+<option>P1</option>
+<option>P2</option>
+</select><br>
+
+Date: <input type="date" id="p_date"><br>
+Hour: <input id="p_hour"><br>
+Minute: <input id="p_min"><br>
+
+Status:
+<select id="p_status">
+<option>Pending</option>
+<option>Done</option>
+</select><br>
+
+Instructor: <input id="p_ins"><br>
+
+<button onclick="addRow('P')">Submit</button>
+</div>
     </div>
 </div>
 
@@ -297,18 +363,22 @@ function pad(n) {
 }
 
 // ===== Popup =====
-function showPopup(data) {
+function showPopup(data, sheetName) {
     document.querySelector(".overlay").style.display = "block";
     const popup = document.getElementById("popup");
 
     popup.innerHTML = `
         <h3>${data.name}</h3>
-        SID: ${data.SID}<br>
-        Grade: ${data.grade}<br>
-        Time: ${data.hour}:${data.minute}<br>
-        Status: ${data.status}<br>
-        Instructor: ${data.instructor}<br>
-        Row: ${data.row}<br><br>
+
+        Grade: <input id="grade" value="${data.grade}"><br>
+        Hour: <input id="hour" value="${data.hour}"><br>
+        Minute: <input id="minute" value="${data.minute}"><br>
+        Status: <input id="status" value="${data.status}"><br>
+        Instructor: <input id="instructor" value="${data.instructor}"><br>
+
+        <br>
+        <button class="update" onclick='updateRow(${JSON.stringify(data)}, "${sheetName}")'>Update</button>
+        <button class="delete" onclick='deleteRow(${data.row}, "${sheetName}")'>Delete</button>
         <button onclick="closePopup()">Close</button>
     `;
 
@@ -330,7 +400,77 @@ function showTab(tab) {
     document.getElementById("weekView").style.display = tab === 'week' ? "block" : "none";
     document.getElementById("monthView").style.display = tab === 'month' ? "block" : "none";
 }
+const API_URL = "https://script.google.com/macros/s/AKfycbzhnMSoseKulqNqZ6yKDn2irFcS53EUIN8at-IVaQQl9AYm_5FaIAcyZAl63siVSRxc/exec";
 
+async function updateRow(data, sheet) {
+    const values = [
+        data.SID,
+        data.name,
+        data.phone,
+        document.getElementById("grade").value,
+        data.remark,
+        data.rawDate || data.date,
+        document.getElementById("hour").value,
+        document.getElementById("minute").value,
+        document.getElementById("status").value,
+        document.getElementById("instructor").value
+    ];
+
+    await fetch(API_URL, {
+        method: "POST",
+        body: JSON.stringify({
+            action: "update",
+            sheet: sheet,
+            row: data.row,
+            values: values
+        })
+    });
+
+    alert("Updated!");
+    loadData();
+}
+
+async function deleteRow(row, sheet) {
+    await fetch(API_URL, {
+        method: "POST",
+        body: JSON.stringify({
+            action: "delete",
+            sheet: sheet,
+            row: row
+        })
+    });
+
+    alert("Deleted!");
+    loadData();
+}
+async function addRow(type) {
+    const prefix = type.toLowerCase();
+
+    const values = [
+        document.getElementById(prefix+"_sid").value,
+        document.getElementById(prefix+"_name").value,
+        document.getElementById(prefix+"_phone").value,
+        document.getElementById(prefix+"_grade").value,
+        "",
+        document.getElementById(prefix+"_date").value,
+        document.getElementById(prefix+"_hour").value,
+        document.getElementById(prefix+"_min").value,
+        document.getElementById(prefix+"_status").value,
+        document.getElementById(prefix+"_ins").value
+    ];
+
+    await fetch(API_URL, {
+        method: "POST",
+        body: JSON.stringify({
+            action: "add",
+            sheet: type === "K" ? "SheetK" : "SheetP",
+            values: values
+        })
+    });
+
+    alert("Added!");
+    loadData();
+}
 // ===== Init =====
 document.getElementById("datePicker").valueAsDate = currentDate;
 document.getElementById("datePicker").onchange = e => {
