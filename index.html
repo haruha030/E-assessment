@@ -399,6 +399,8 @@ function changeWeek(offset) {
 function showTab(tab) {
     document.getElementById("weekView").style.display = tab === 'week' ? "block" : "none";
     document.getElementById("monthView").style.display = tab === 'month' ? "block" : "none";
+    document.getElementById("addK").style.display = tab === 'addK' ? "block" : "none";
+    document.getElementById("addP").style.display = tab === 'addP' ? "block" : "none";
 }
 const API_URL = "https://script.google.com/macros/s/AKfycbzhnMSoseKulqNqZ6yKDn2irFcS53EUIN8at-IVaQQl9AYm_5FaIAcyZAl63siVSRxc/exec";
 
