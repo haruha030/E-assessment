@@ -1,0 +1,326 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Assessment Booking Manager</title>
+<style>
+body {
+    margin: 0;
+    font-family: Arial;
+    background: #1e293b;
+    color: white;
+}
+
+/* Layout */
+.container {
+    display: flex;
+    height: 100vh;
+}
+
+.sidebar {
+    width: 220px;
+    background: #0f172a;
+    padding: 20px;
+}
+
+.tab {
+    padding: 12px;
+    margin-bottom: 10px;
+    background: #1e293b;
+    cursor: pointer;
+    border-radius: 8px;
+}
+
+.tab:hover {
+    background: #334155;
+}
+
+.content {
+    flex: 1;
+    padding: 20px;
+}
+
+/* Top Controls */
+.topbar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 15px;
+}
+
+button {
+    background: #3b82f6;
+    border: none;
+    padding: 8px 12px;
+    color: white;
+    border-radius: 6px;
+    cursor: pointer;
+}
+
+button:hover {
+    background: #2563eb;
+}
+
+/* Table */
+table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+td, th {
+    border: 1px solid #334155;
+    padding: 10px;
+    vertical-align: top;
+}
+
+.day-cell {
+    height: 100px;
+}
+
+/* Booking button */
+.booking {
+    display: block;
+    background: #22c55e;
+    margin: 4px 0;
+    padding: 5px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+/* Popup */
+.popup {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: #0f172a;
+    padding: 20px;
+    border-radius: 10px;
+    display: none;
+    width: 300px;
+}
+
+.overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0,0,0,0.5);
+    display: none;
+}
+</style>
+</head>
+
+<body>
+
+<div class="container">
+
+    <!-- Sidebar -->
+    <div class="sidebar">
+        <div class="tab" onclick="showTab('week')">Weekly View</div>
+        <div class="tab" onclick="showTab('month')">Monthly View</div>
+    </div>
+
+    <!-- Content -->
+    <div class="content">
+
+        <!-- Top Bar -->
+        <div class="topbar">
+            <button onclick="changeWeek(-7)">⬅</button>
+            <input type="date" id="datePicker">
+            <button onclick="changeWeek(7)">➡</button>
+        </div>
+
+        <!-- Weekly -->
+        <div id="weekView"></div>
+
+        <!-- Monthly -->
+        <div id="monthView" style="display:none;"></div>
+
+    </div>
+</div>
+
+<!-- Popup -->
+<div class="overlay" onclick="closePopup()"></div>
+<div class="popup" id="popup"></div>
+
+<script>
+// ===== CONFIG =====
+const SHEET_K_URL = "YOUR_SHEET_K_CSV_URL";
+const SHEET_P_URL = "YOUR_SHEET_P_CSV_URL";
+
+let dataK = [];
+let dataP = [];
+let currentDate = new Date();
+
+// ===== Fetch Data =====
+async function loadData() {
+    const k = await fetch(SHEET_K_URL).then(r => r.text());
+    const p = await fetch(SHEET_P_URL).then(r => r.text());
+
+    dataK = parseCSV(k);
+    dataP = parseCSV(p);
+
+    renderWeek();
+    renderMonth();
+}
+
+// ===== CSV Parser =====
+function parseCSV(text) {
+    const rows = text.split("\n").map(r => r.split(","));
+    return rows.slice(1).map((r, i) => ({
+        row: i + 2,
+        SID: r[0],
+        name: r[1],
+        phone: r[2],
+        grade: r[3],
+        remark: r[4],
+        date: r[5],
+        hour: r[6],
+        minute: r[7],
+        status: r[8],
+        instructor: r[9]
+    }));
+}
+
+// ===== Weekly View =====
+function renderWeek() {
+    const container = document.getElementById("weekView");
+    container.innerHTML = "";
+
+    let start = new Date(currentDate);
+    start.setDate(start.getDate() - start.getDay());
+
+    let table = "<table><tr>";
+
+    for (let i = 0; i < 7; i++) {
+        let d = new Date(start);
+        d.setDate(start.getDate() + i);
+        table += `<th>${d.toDateString()}</th>`;
+    }
+    table += "</tr>";
+
+    // K row
+    table += "<tr>";
+    for (let i = 0; i < 7; i++) {
+        let d = formatDate(start, i);
+        table += `<td>${renderCell(dataK, d)}</td>`;
+    }
+    table += "</tr>";
+
+    // P row
+    table += "<tr>";
+    for (let i = 0; i < 7; i++) {
+        let d = formatDate(start, i);
+        table += `<td>${renderCell(dataP, d)}</td>`;
+    }
+    table += "</tr>";
+
+    table += "</table>";
+    container.innerHTML = table;
+}
+
+function renderCell(data, date) {
+    return data
+        .filter(x => x.date === date)
+        .map(x => `
+            <div class="booking" onclick='showPopup(${JSON.stringify(x)})'>
+                ${x.SID || ""} ${x.name}<br>
+                ${x.grade} ${x.hour}:${x.minute}
+            </div>
+        `).join("");
+}
+
+// ===== Monthly View =====
+function renderMonth() {
+    const container = document.getElementById("monthView");
+    container.innerHTML = "";
+
+    let d = new Date(currentDate);
+    let year = d.getFullYear();
+    let month = d.getMonth();
+
+    let firstDay = new Date(year, month, 1).getDay();
+    let days = new Date(year, month + 1, 0).getDate();
+
+    let table = "<table><tr>";
+
+    for (let i = 0; i < firstDay; i++) table += "<td></td>";
+
+    for (let day = 1; day <= days; day++) {
+        let fullDate = `${year}-${pad(month+1)}-${pad(day)}`;
+
+        let bookings = [...dataK, ...dataP].filter(x => x.date === fullDate);
+
+        table += `<td class="day-cell">
+            <b>${day}</b><br>
+            ${bookings.map(b => `<div class="booking">${b.SID}</div>`).join("")}
+        </td>`;
+
+        if ((day + firstDay) % 7 === 0) table += "</tr><tr>";
+    }
+
+    table += "</tr></table>";
+    container.innerHTML = table;
+}
+
+// ===== Helpers =====
+function formatDate(start, offset) {
+    let d = new Date(start);
+    d.setDate(d.getDate() + offset);
+    return `${d.getFullYear()}-${pad(d.getMonth()+1)}-${pad(d.getDate())}`;
+}
+
+function pad(n) {
+    return n.toString().padStart(2, '0');
+}
+
+// ===== Popup =====
+function showPopup(data) {
+    document.querySelector(".overlay").style.display = "block";
+    const popup = document.getElementById("popup");
+
+    popup.innerHTML = `
+        <h3>${data.name}</h3>
+        SID: ${data.SID}<br>
+        Grade: ${data.grade}<br>
+        Time: ${data.hour}:${data.minute}<br>
+        Status: ${data.status}<br>
+        Instructor: ${data.instructor}<br>
+        Row: ${data.row}<br><br>
+        <button onclick="closePopup()">Close</button>
+    `;
+
+    popup.style.display = "block";
+}
+
+function closePopup() {
+    document.querySelector(".overlay").style.display = "none";
+    document.getElementById("popup").style.display = "none";
+}
+
+// ===== Navigation =====
+function changeWeek(offset) {
+    currentDate.setDate(currentDate.getDate() + offset);
+    renderWeek();
+}
+
+function showTab(tab) {
+    document.getElementById("weekView").style.display = tab === 'week' ? "block" : "none";
+    document.getElementById("monthView").style.display = tab === 'month' ? "block" : "none";
+}
+
+// ===== Init =====
+document.getElementById("datePicker").valueAsDate = currentDate;
+document.getElementById("datePicker").onchange = e => {
+    currentDate = new Date(e.target.value);
+    renderWeek();
+    renderMonth();
+};
+
+loadData();
+</script>
+
+</body>
+</html>
