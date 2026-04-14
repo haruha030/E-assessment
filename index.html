@@ -73,47 +73,28 @@ button:hover {
 /* Table */
 table {
     width: 100%;
-    table-layout: fixed;
     border-collapse: collapse;
 }
 
 td, th {
-    width: calc(100% / 7); /* ✅ 7 equal columns */
-    border: 1px solid #ddd;
+    border: 1px solid #334155;
+    padding: 10px;
     vertical-align: top;
 }
 
 .day-cell {
-    height: 110px;
-    overflow: hidden;
+    height: 100px;
 }
 
-.day-cell.auto-expand {
-    height: auto;
-}
-
-/* Weekly cells */
-.week-cell {
-    min-height: 240px; 
-    height: 240px;
-    overflow: visible;
-}
-
-/* Expand only when needed */
-.week-cell.auto-expand {
-    height: auto;
-}
 /* Booking button */
 .booking {
-    color: white;
     display: block;
+    background: #3b82f6;
+    color: white;
     margin: 4px 0;
-    padding: 6px;
-    border-radius: 6px;
+    padding: 5px;
+    border-radius: 5px;
     cursor: pointer;
-    font-size: 12px;
-    line-height: 1.2;
-    word-break: break-word;
 }
 
 /* Popup */
@@ -333,17 +314,13 @@ function normalizeDate(str) {
 }
 
 function renderCell(data, date, sheetName) {
-    const items = data.filter(x => x.date === date && x.SID);
+    return data
+        .filter(x => x.date === date)
+        .map(x => {
+            let color = "#3b82f6"; // default blue
 
-    let cellClass = "week-cell";
-    if (items.length > 3) cellClass += " auto-expand"; // ✅ expand if crowded
-
-    return `
-        <div class="${cellClass}">
-        ${items.map(x => {
-            let color = "#3b82f6";
-            if (x.status.includes("✅")) color = "#22c55e";
-            if (x.status.includes("❌")) color = "#ef4444";
+            if (x.status === "✅") color = "#22c55e";
+            if (x.status === "❌") color = "#ef4444";
 
             return `
                 <div class="booking"
@@ -355,9 +332,7 @@ function renderCell(data, date, sheetName) {
                     ${x.grade} ${x.hour}:${x.minute}
                 </div>
             `;
-        }).join("")}
-        </div>
-    `;
+        }).join("");
 }
 
 // ===== Monthly View =====
@@ -382,17 +357,14 @@ function renderMonth() {
         let bookings = [
             ...dataK.map(x => ({...x, sheet:"SheetK"})),
             ...dataP.map(x => ({...x, sheet:"SheetP"}))
-        ].filter(x => x.date === fullDate && x.SID);
+        ].filter(x => x.date === fullDate);
 
-        let cellClass = "day-cell";
-        if (bookings.length > 3) cellClass += " auto-expand";
-
-        table += `<td class="${cellClass}">
+        table += `<td class="day-cell">
             <b>${day}</b><br>
             ${bookings.map(b => {
                 let color = "#3b82f6";
-                if (b.status.includes("✅")) color = "#22c55e";
-                if (b.status.includes("❌")) color = "#ef4444";
+                if (b.status === "✅") color = "#22c55e";
+                if (b.status === "❌") color = "#ef4444";
 
                 return `
                     <div class="booking"
@@ -400,7 +372,7 @@ function renderMonth() {
                          onclick='showPopup(${JSON.stringify(b)}, "${b.sheet}")'>
                          
                         ${b.status ? b.status + " " : ""}
-                        ${b.SID || ""} ${b.name} (${b.grade})
+                        ${b.SID || ""} ${b.name}
                     </div>
                 `;
             }).join("")}
