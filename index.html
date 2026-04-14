@@ -116,6 +116,10 @@ td, th {
     word-break: break-word;
 }
 
+.today-highlight {
+    background: #fef9c3 !important; /* soft yellow */
+}
+
 /* Popup */
 .popup {
     position: fixed;
@@ -291,28 +295,45 @@ function renderWeek() {
     let start = new Date(currentDate);
     start.setDate(start.getDate() - start.getDay());
 
+    const today = getTodayStr();
+
     let table = "<table><tr>";
 
+    // Header
     for (let i = 0; i < 7; i++) {
-        let d = new Date(start);
-        d.setDate(start.getDate() + i);
-        table += `<th>${d.toDateString()}</th>`;
+        let d = formatDate(start, i);
+        let dateObj = new Date(start);
+        dateObj.setDate(start.getDate() + i);
+
+        const isToday = d === today;
+
+        table += `<th class="${isToday ? 'today-highlight' : ''}">
+            ${dateObj.toDateString()}
+        </th>`;
     }
     table += "</tr>";
 
-    // K row
+    // Sheet K row
     table += "<tr>";
     for (let i = 0; i < 7; i++) {
         let d = formatDate(start, i);
-        table += `<td>${renderCell(dataK, d, SHEET_K_NAME)}</td>`;
+        const isToday = d === today;
+
+        table += `<td class="${isToday ? 'today-highlight' : ''}">
+            ${renderCell(dataK, d, "SheetK")}
+        </td>`;
     }
     table += "</tr>";
 
-    // P row
+    // Sheet P row
     table += "<tr>";
     for (let i = 0; i < 7; i++) {
         let d = formatDate(start, i);
-        table += `<td>${renderCell(dataP, d, SHEET_P_NAME)}</td>`;
+        const isToday = d === today;
+
+        table += `<td class="${isToday ? 'today-highlight' : ''}">
+            ${renderCell(dataP, d, "SheetP")}
+        </td>`;
     }
     table += "</tr>";
 
@@ -375,12 +396,24 @@ function renderMonth() {
     let firstDay = new Date(year, month, 1).getDay();
     let days = new Date(year, month + 1, 0).getDate();
 
-    let table = "<table><tr>";
+    const today = getTodayStr();
 
+    let table = "<table>";
+
+    // ✅ Weekday header
+    const weekdays = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+    table += "<tr>";
+    weekdays.forEach(w => {
+        table += `<th>${w}</th>`;
+    });
+    table += "</tr><tr>";
+
+    // Empty cells before first day
     for (let i = 0; i < firstDay; i++) table += "<td></td>";
 
     for (let day = 1; day <= days; day++) {
         let fullDate = `${year}-${pad(month+1)}-${pad(day)}`;
+        const isToday = fullDate === today;
 
         let bookings = [
             ...dataK.map(x => ({...x, sheet:"SheetK"})),
@@ -389,6 +422,7 @@ function renderMonth() {
 
         let cellClass = "day-cell";
         if (bookings.length > 3) cellClass += " auto-expand";
+        if (isToday) cellClass += " today-highlight";
 
         table += `<td class="${cellClass}">
             <b>${day}</b><br>
@@ -417,6 +451,10 @@ function renderMonth() {
 }
 
 // ===== Helpers =====
+function getTodayStr() {
+    const t = new Date();
+    return `${t.getFullYear()}-${pad(t.getMonth()+1)}-${pad(t.getDate())}`;
+}
 function formatDate(start, offset) {
     let d = new Date(start);
     d.setDate(d.getDate() + offset);
