@@ -73,28 +73,47 @@ button:hover {
 /* Table */
 table {
     width: 100%;
+    table-layout: fixed;
     border-collapse: collapse;
 }
 
 td, th {
-    border: 1px solid #334155;
-    padding: 10px;
+    width: calc(100% / 7); /* ✅ 7 equal columns */
+    border: 1px solid #ddd;
     vertical-align: top;
 }
 
 .day-cell {
-    height: 100px;
+    height: 110px;
+    overflow: hidden;
 }
 
+.day-cell.auto-expand {
+    height: auto;
+}
+
+/* Weekly cells */
+.week-cell {
+    min-height: 240px; 
+    height: 240px;
+    overflow: visible;
+}
+
+/* Expand only when needed */
+.week-cell.auto-expand {
+    height: auto;
+}
 /* Booking button */
 .booking {
-    display: block;
-    background: #3b82f6;
     color: white;
+    display: block;
     margin: 4px 0;
-    padding: 5px;
-    border-radius: 5px;
+    padding: 6px;
+    border-radius: 6px;
     cursor: pointer;
+    font-size: 12px;
+    line-height: 1.2;
+    word-break: break-word;
 }
 
 /* Popup */
@@ -139,9 +158,9 @@ td, th {
 
         <!-- Top Bar -->
         <div class="topbar">
-            <button onclick="changeWeek(-7)">⬅</button>
+            <button onclick="changeDate(-1)">⬅</button>
             <input type="date" id="datePicker">
-            <button onclick="changeWeek(7)">➡</button>
+            <button onclick="changeDate(1)">➡</button>
         </div>
 
         <!-- Weekly -->
@@ -221,6 +240,9 @@ const SHEET_P_URL = "https://docs.google.com/spreadsheets/d/1Df_gvXcyANilmcuPoxQ
 let dataK = [];
 let dataP = [];
 let currentDate = new Date();
+let currentTab = "week";
+syncDatePicker();
+renderCurrentView();
 
 // ===== Fetch Data =====
 async function loadData() {
@@ -314,13 +336,17 @@ function normalizeDate(str) {
 }
 
 function renderCell(data, date, sheetName) {
-    return data
-        .filter(x => x.date === date)
-        .map(x => {
-            let color = "#3b82f6"; // default blue
+    const items = data.filter(x => x.date === date);
 
-            if (x.status === "✅") color = "#22c55e";
-            if (x.status === "❌") color = "#ef4444";
+    let cellClass = "week-cell";
+    if (items.length > 3) cellClass += " auto-expand";
+
+    return `
+        <div class="${cellClass}">
+        ${items.map(x => {
+            let color = "#3b82f6";
+            if (x.status.includes("✅")) color = "#22c55e";
+            if (x.status.includes("❌")) color = "#ef4444";
 
             return `
                 <div class="booking"
@@ -332,7 +358,9 @@ function renderCell(data, date, sheetName) {
                     ${x.grade} ${x.hour}:${x.minute}
                 </div>
             `;
-        }).join("");
+        }).join("")}
+        </div>
+    `;
 }
 
 // ===== Monthly View =====
@@ -359,12 +387,15 @@ function renderMonth() {
             ...dataP.map(x => ({...x, sheet:"SheetP"}))
         ].filter(x => x.date === fullDate);
 
-        table += `<td class="day-cell">
+        let cellClass = "day-cell";
+        if (bookings.length > 3) cellClass += " auto-expand";
+
+        table += `<td class="${cellClass}">
             <b>${day}</b><br>
             ${bookings.map(b => {
                 let color = "#3b82f6";
-                if (b.status === "✅") color = "#22c55e";
-                if (b.status === "❌") color = "#ef4444";
+                if (b.status.includes("✅")) color = "#22c55e";
+                if (b.status.includes("❌")) color = "#ef4444";
 
                 return `
                     <div class="booking"
@@ -372,7 +403,7 @@ function renderMonth() {
                          onclick='showPopup(${JSON.stringify(b)}, "${b.sheet}")'>
                          
                         ${b.status ? b.status + " " : ""}
-                        ${b.SID || ""} ${b.name}
+                        ${b.SID || ""} ${b.name} (${b.grade})
                     </div>
                 `;
             }).join("")}
@@ -396,6 +427,10 @@ function pad(n) {
     return n.toString().padStart(2, '0');
 }
 
+function syncDatePicker() {
+    document.getElementById("datePicker").value =
+        currentDate.toISOString().split("T")[0];
+}
 // ===== Popup =====
 function showPopup(data, sheetName) {
     document.querySelector(".overlay").style.display = "block";
@@ -425,17 +460,42 @@ function closePopup() {
 }
 
 // ===== Navigation =====
-function changeWeek(offset) {
-    currentDate.setDate(currentDate.getDate() + offset);
-    renderWeek();
+function changeDate(offset) {
+    if (currentTab === "week") {
+        currentDate.setDate(currentDate.getDate() + offset);
+    }
+
+    if (currentTab === "month") {
+        currentDate.setMonth(currentDate.getMonth() + (offset > 0 ? 1 : -1));
+    }
+
+    renderCurrentView();
 }
 
+document.getElementById("datePicker").onchange = e => {
+    currentDate = new Date(e.target.value);
+    renderCurrentView();
+};
+
 function showTab(tab) {
+    currentTab = tab;
     document.getElementById("weekView").style.display = tab === 'week' ? "block" : "none";
     document.getElementById("monthView").style.display = tab === 'month' ? "block" : "none";
     document.getElementById("addK").style.display = tab === 'addK' ? "block" : "none";
     document.getElementById("addP").style.display = tab === 'addP' ? "block" : "none";
+    renderCurrentView();
 }
+
+function renderCurrentView() {
+    syncDatePicker();
+
+    if (currentTab === "week") {
+        renderWeek();
+    } else if (currentTab === "month") {
+        renderMonth();
+    }
+}
+
 const API_URL = "https://script.google.com/macros/s/AKfycbxh_7Un90N99oknc7Kz52VtUjoeyPjsbI-NgC98vToVXFPIMS0v82m6XNKY6ZM8WBIA4w/exec";
 
 async function updateRow(data, sheet) {
