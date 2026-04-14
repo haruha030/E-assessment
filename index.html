@@ -158,9 +158,9 @@ td, th {
 
         <!-- Top Bar -->
         <div class="topbar">
-            <button onclick="changeDate(-1)">⬅</button>
+            <button onclick="changeWeek(-7)">⬅</button>
             <input type="date" id="datePicker">
-            <button onclick="changeDate(1)">➡</button>
+            <button onclick="changeWeek(7)">➡</button>
         </div>
 
         <!-- Weekly -->
@@ -240,9 +240,6 @@ const SHEET_P_URL = "https://docs.google.com/spreadsheets/d/1Df_gvXcyANilmcuPoxQ
 let dataK = [];
 let dataP = [];
 let currentDate = new Date();
-let currentTab = "week";
-syncDatePicker();
-renderCurrentView();
 
 // ===== Fetch Data =====
 async function loadData() {
@@ -339,7 +336,7 @@ function renderCell(data, date, sheetName) {
     const items = data.filter(x => x.date === date && x.SID);
 
     let cellClass = "week-cell";
-    if (items.length > 3) cellClass += " auto-expand";
+    if (items.length > 3) cellClass += " auto-expand"; // ✅ expand if crowded
 
     return `
         <div class="${cellClass}">
@@ -427,10 +424,6 @@ function pad(n) {
     return n.toString().padStart(2, '0');
 }
 
-function syncDatePicker() {
-    document.getElementById("datePicker").value =
-        currentDate.toISOString().split("T")[0];
-}
 // ===== Popup =====
 function showPopup(data, sheetName) {
     document.querySelector(".overlay").style.display = "block";
@@ -460,42 +453,17 @@ function closePopup() {
 }
 
 // ===== Navigation =====
-function changeDate(offset) {
-    if (currentTab === "week") {
-        currentDate.setDate(currentDate.getDate() + offset);
-    }
-
-    if (currentTab === "month") {
-        currentDate.setMonth(currentDate.getMonth() + (offset > 0 ? 1 : -1));
-    }
-
-    renderCurrentView();
+function changeWeek(offset) {
+    currentDate.setDate(currentDate.getDate() + offset);
+    renderWeek();
 }
 
-document.getElementById("datePicker").onchange = e => {
-    currentDate = new Date(e.target.value);
-    renderCurrentView();
-};
-
 function showTab(tab) {
-    currentTab = tab;
     document.getElementById("weekView").style.display = tab === 'week' ? "block" : "none";
     document.getElementById("monthView").style.display = tab === 'month' ? "block" : "none";
     document.getElementById("addK").style.display = tab === 'addK' ? "block" : "none";
     document.getElementById("addP").style.display = tab === 'addP' ? "block" : "none";
-    renderCurrentView();
 }
-
-function renderCurrentView() {
-    syncDatePicker();
-
-    if (currentTab === "week") {
-        renderWeek();
-    } else if (currentTab === "month") {
-        renderMonth();
-    }
-}
-
 const API_URL = "https://script.google.com/macros/s/AKfycbxh_7Un90N99oknc7Kz52VtUjoeyPjsbI-NgC98vToVXFPIMS0v82m6XNKY6ZM8WBIA4w/exec";
 
 async function updateRow(data, sheet) {
