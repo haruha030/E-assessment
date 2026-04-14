@@ -500,7 +500,7 @@ function closePopup() {
 // ===== Navigation =====
 function changeDate(offset) {
     if (currentTab === "week") {
-        currentDate.setDate(currentDate.getDate() + offset);
+        currentDate.setDate(currentDate.getDate() + offset*7);
     }
 
     if (currentTab === "month") {
