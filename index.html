@@ -437,7 +437,7 @@ function renderMonth() {
                          onclick='showPopup(${JSON.stringify(b)}, "${b.sheet}")'>
                          
                         ${b.status ? b.status + " " : ""}
-                        ${b.SID || ""} ${b.name} (${b.grade})
+                        ${b.SID || ""} ${b.name} (${b.grade})  ${b.hour}:${b.minute}
                     </div>
                 `;
             }).join("")}
