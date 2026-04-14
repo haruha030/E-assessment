@@ -103,7 +103,7 @@ td, th {
     top: 50%;
     left: 50%;
     transform: translate(-50%, -50%);
-    background: #0f172a;
+    background: #ffffff;
     padding: 20px;
     border-radius: 10px;
     display: none;
@@ -213,8 +213,10 @@ Instructor: <input id="p_ins"><br>
 
 <script>
 // ===== CONFIG =====
-const SHEET_K_URL = "https://docs.google.com/spreadsheets/d/1Fsn_TK0mA0dZ21kgH7qOFaBy1xwm0Hl8KyxEH5tHYwo/gviz/tq?tqx=out:csv&sheet=P1/G1-S6/G13";
-const SHEET_P_URL = "https://docs.google.com/spreadsheets/d/1Fsn_TK0mA0dZ21kgH7qOFaBy1xwm0Hl8KyxEH5tHYwo/gviz/tq?tqx=out:csv&sheet=PN-K3/K-MO";
+const SHEET_K_NAME = "PN-K3/K-MO";
+const SHEET_P_NAME = "P1/G1-S6/G13";
+const SHEET_K_URL = "https://docs.google.com/spreadsheets/d/1Df_gvXcyANilmcuPoxQHS_k02soH115dzWhbEWfev2Y/gviz/tq?tqx=out:csv&sheet=PN-K3/K-MO";
+const SHEET_P_URL = "https://docs.google.com/spreadsheets/d/1Df_gvXcyANilmcuPoxQHS_k02soH115dzWhbEWfev2Y/gviz/tq?tqx=out:csv&sheet=P1/G1-S6/G13";
 
 let dataK = [];
 let dataP = [];
@@ -238,20 +240,24 @@ async function loadData() {
 }
 
 // ===== CSV Parser =====
+function clean(v) {
+    return v ? v.replace(/^"|"$/g, "").trim() : "";
+}
+
 function parseCSV(text) {
     const rows = text.split("\n").map(r => r.split(","));
     return rows.slice(1).map((r, i) => ({
         row: i + 2,
-        SID: r[1],
-        name: r[2],
-        phone: r[0],
-        grade: r[6],
-        remark: r[4],
-        date: normalizeDate(r[7]),
-        hour: r[4],
-        minute: r[5],
-        status: r[12],
-        instructor: r[13]
+        SID: clean(r[1]),
+        name: clean(r[2]),
+        phone: clean(r[0]),
+        grade: clean(r[6]),
+        remark: clean(r[4]),
+        date: normalizeDate(clean(r[7])),
+        hour: clean(r[4]),
+        minute: clean(r[5]),
+        status: clean(r[12]),
+        instructor: clean(r[13])
     }));
 }
 
@@ -276,7 +282,7 @@ function renderWeek() {
     table += "<tr>";
     for (let i = 0; i < 7; i++) {
         let d = formatDate(start, i);
-        table += `<td>${renderCell(dataK, d)}</td>`;
+        table += `<td>${renderCell(dataK, d, SHEET_K_NAME)}</td>`;
     }
     table += "</tr>";
 
@@ -284,7 +290,7 @@ function renderWeek() {
     table += "<tr>";
     for (let i = 0; i < 7; i++) {
         let d = formatDate(start, i);
-        table += `<td>${renderCell(dataP, d)}</td>`;
+        table += `<td>${renderCell(dataP, d, SHEET_P_NAME)}</td>`;
     }
     table += "</tr>";
 
@@ -307,15 +313,26 @@ function normalizeDate(str) {
     return `${y}-${m}-${d}`;
 }
 
-function renderCell(data, date) {
+function renderCell(data, date, sheetName) {
     return data
         .filter(x => x.date === date)
-        .map(x => `
-            <div class="booking" onclick='showPopup(${JSON.stringify(x)})'>
-                ${x.SID || ""} ${x.name}<br>
-                ${x.grade} ${x.hour}:${x.minute}
-            </div>
-        `).join("");
+        .map(x => {
+            let color = "#3b82f6"; // default blue
+
+            if (x.status === "✅") color = "#22c55e";
+            if (x.status === "❌") color = "#ef4444";
+
+            return `
+                <div class="booking"
+                     style="background:${color}"
+                     onclick='showPopup(${JSON.stringify(x)}, "${sheetName}")'>
+                     
+                    ${x.status ? x.status + " " : ""}
+                    ${x.SID || ""} ${x.name}<br>
+                    ${x.grade} ${x.hour}:${x.minute}
+                </div>
+            `;
+        }).join("");
 }
 
 // ===== Monthly View =====
@@ -337,11 +354,28 @@ function renderMonth() {
     for (let day = 1; day <= days; day++) {
         let fullDate = `${year}-${pad(month+1)}-${pad(day)}`;
 
-        let bookings = [...dataK, ...dataP].filter(x => x.date === fullDate);
+        let bookings = [
+            ...dataK.map(x => ({...x, sheet:"SheetK"})),
+            ...dataP.map(x => ({...x, sheet:"SheetP"}))
+        ].filter(x => x.date === fullDate);
 
         table += `<td class="day-cell">
             <b>${day}</b><br>
-            ${bookings.map(b => `<div class="booking">${b.SID}</div>`).join("")}
+            ${bookings.map(b => {
+                let color = "#3b82f6";
+                if (b.status === "✅") color = "#22c55e";
+                if (b.status === "❌") color = "#ef4444";
+
+                return `
+                    <div class="booking"
+                         style="background:${color}"
+                         onclick='showPopup(${JSON.stringify(b)}, "${b.sheet}")'>
+                         
+                        ${b.status ? b.status + " " : ""}
+                        ${b.SID || ""} ${b.name}
+                    </div>
+                `;
+            }).join("")}
         </td>`;
 
         if ((day + firstDay) % 7 === 0) table += "</tr><tr>";
@@ -402,7 +436,7 @@ function showTab(tab) {
     document.getElementById("addK").style.display = tab === 'addK' ? "block" : "none";
     document.getElementById("addP").style.display = tab === 'addP' ? "block" : "none";
 }
-const API_URL = "https://script.google.com/macros/s/AKfycbzhnMSoseKulqNqZ6yKDn2irFcS53EUIN8at-IVaQQl9AYm_5FaIAcyZAl63siVSRxc/exec";
+const API_URL = "https://script.google.com/macros/s/AKfycbxh_7Un90N99oknc7Kz52VtUjoeyPjsbI-NgC98vToVXFPIMS0v82m6XNKY6ZM8WBIA4w/exec";
 
 async function updateRow(data, sheet) {
     const values = [
@@ -465,7 +499,7 @@ async function addRow(type) {
         method: "POST",
         body: JSON.stringify({
             action: "add",
-            sheet: type === "K" ? "PN-K3/K-MO" : "P1/G1-S6/G13",
+            sheet: type === "K" ? SHEET_K_NAME : SHEET_P_NAME,
             values: values
         })
     });
