@@ -556,11 +556,11 @@ function renderCell(data, date, sheetName) {
 
                     ${opts.grade ? `${x.grade}<br>` : ""}
 
-                    ${opts.phone && x.phone ? `📞 ${x.phone}<br>` : ""}
-                    ${opts.school && x.school ? `🏫 ${x.school}<br>` : ""}
+                    ${opts.phone && x.phone ? `<b>Tel:</b> ${x.phone}<br>` : ""}
+                    ${opts.school && x.school ? `<b>School:</b> ${x.school}<br>` : ""}
                     ${opts.handled && x.handledBy ? `👨‍🏫 ${x.handledBy}<br>` : ""}
-                    ${opts.reported && x.reportedBy ? `📝 ${x.reportedBy}<br>` : ""}
-                    ${opts.remark && x.remarks ? `💬 ${x.remarks}<br>` : ""}
+                    ${opts.reported && x.reportedBy ? `<b>Reported:</b> ${x.reportedBy}<br>` : ""}
+                    ${opts.remark && x.remarks ? `<b>Remark:</b> ${x.remarks}<br>` : ""}
 
                 </div>
             `;
@@ -770,7 +770,7 @@ function showTab(tab) {
     document.getElementById("addK").style.display = tab === 'addK' ? "block" : "none";
     document.getElementById("addP").style.display = tab === 'addP' ? "block" : "none";
     document.getElementById("topControls").style.display = (tab === "week" || tab === "month") ? "flex" : "none";
-    document.getElementById("weeklyOptions").style.display = tab === "week" ? "block" : "none";
+    document.getElementById("weeklyOptions").style.display = tab === "week" ? "flex" : "none";
     renderCurrentView();
 }
 
