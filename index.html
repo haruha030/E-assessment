@@ -179,31 +179,31 @@ td, th {
         SID: <input id="k_sid"><br>
         Name: <input id="k_name"><br>
 
-       <!-- Hour: ${renderSelect("k_hour", HOURS, data.hour)}
-        Minute: ${renderSelect("k_minute", MINUTES, data.minute)}<br>
+        Hour: ${renderSelect("k_hour", HOURS, HOURS[0])}
+        Minute: ${renderSelect("k_minute", MINUTES, MINUTES[0])}<br>
 
-        Grade: ${renderSelect("k_grade", grades, data.grade)}<br>-->
+        Grade: ${renderSelect("k_grade", GRADE_K, GRADE_K[0])}<br>
         Date: <input type="date" id="k_date"><br>
 
         School: <input id="k_school" value="${data.school}"><br>
 
-        <!--Language: ${renderSelect("k_language", LANGUAGES, data.language)}<br>
+        Language: ${renderSelect("k_language", LANGUAGES, LANGUAGES[0])}<br>
 
-        Status: ${renderSelect("k_status", STATUS_LIST, data.status)}<br>
+        Status: ${renderSelect("k_status", STATUS_LIST, STATUS_LIST[0])}<br>
 
-        Handled by: ${renderSelect("k_handledBy", TEACHERS, data.handledBy)}<br>
-        Reported by: ${renderSelect("k_reportedBy", TEACHERS, data.reportedBy)}<br>
-        Instructor: ${renderSelect("k_instructor", TEACHERS, data.instructor)}<br>-->
+        Handled by: ${renderSelect("k_handledBy", TEACHERS, TEACHERS[0])}<br>
+        Reported by: ${renderSelect("k_reportedBy", TEACHERS, TEACHERS[0])}<br>
+        Instructor: ${renderSelect("k_instructor", TEACHERS, TEACHERS[0])}<br>
 
-        Report Date: <input type="date" id="k_reportDate" value="${data.reportDate}"><br>
+        Report Date: <input type="date" id="k_reportDate"><br>
 
-        Called: <input type="checkbox" id="k_called" ${data.called?"checked":""}>
-        WhatsApp: <input type="checkbox" id="k_whatsapp" ${data.whatsapp?"checked":""}><br>
+        Called: <input type="checkbox" id="k_called" >
+        WhatsApp: <input type="checkbox" id="k_whatsapp"><br>
 
-        <!--Response: ${renderSelect("k_response", RESPONSE_LIST, data.response)}<br>-->
+        Response: ${renderSelect("k_response", RESPONSE_LIST, RESPONSE_LIST[0])}<br>
 
         Remarks:<br>
-        <textarea id="k_remarks">${data.remarks}</textarea><br>
+        <textarea id="k_remarks"></textarea><br>
 
 
 Grade:
@@ -273,11 +273,11 @@ const MINUTES = ["00","15","30","45"];
 
 const LANGUAGES = ["CHI","ENG"];
 
-const STATUS_LIST = ["","✅ ","❌","🤔💭","🈚️","🔄"];
+const STATUS_LIST = ["","✅","❌","🤔💭","🈚️","🔄"];
 
 const RESPONSE_LIST = ["","Waiting","Timeslot Sent","Enrolled","Considering","No Answer"];
 
-const TEACHERS = ["Teacher A","Teacher B","Teacher C"];
+const TEACHERS = ["", "Jessica", "Sophia", "Elsa", "Claudia", "Sean", "Marco", "Ma Sir", "Nick", "Jimmy", "Steve", "Cat", "Sica", "Yoki", "Bryan"];
 
 const GRADE_K = ["PN","K1","K2","K3","G1"];
 const GRADE_P = [
