@@ -106,20 +106,39 @@ td, th {
 
 #weeklyOptions {
     display: flex;
-    gap: 12px;
-    flex-wrap: wrap;
-    padding: 8px;
-    background: #f8fafc;
+    align-items: center;
+    gap: 18px;
+    padding: 10px 14px;
+    margin-bottom: 12px;
+
+    background: #ffffff;
     border: 1px solid #e2e8f0;
-    border-radius: 8px;
+    border-radius: 10px;
+
+    box-shadow: 0 2px 6px rgba(0,0,0,0.05);
 }
 
 #weeklyOptions label {
-    font-size: 13px;
     display: flex;
     align-items: center;
-    gap: 4px;
+    gap: 6px;
+
+    font-size: 13px;
+    color: #334155;
+
+    cursor: pointer;
+    user-select: none;
 }
+    
+#weeklyOptions input[type="checkbox"] {
+    transform: scale(1.1);
+    accent-color: #3b82f6;
+}
+
+#weeklyOptions label:hover {
+    color: #1e293b;
+}
+    
 /* Booking button */
 .booking {
     color: white;
@@ -233,13 +252,14 @@ textarea {
             <button onclick="changeDate(1)">➡</button>
         </div>
 <!-- Weekly options -->
-<div id="weeklyOptions" style="display:none; margin-bottom:10px;">
+<div id="weeklyOptions">
     <label><input type="checkbox" id="opt_phone" checked> Phone</label>
-    <label><input type="checkbox" id="opt_handled" checked> Handled by</label>
+    <label><input type="checkbox" id="opt_handled" checked> Handled</label>
     <label><input type="checkbox" id="opt_remark" checked> Remark</label>
     <label><input type="checkbox" id="opt_school" checked> School</label>
     <label><input type="checkbox" id="opt_grade" checked> Grade</label>
     <label><input type="checkbox" id="opt_reported" checked> Reported</label>
+
 </div>
         <!-- Weekly -->
         <div id="weekView"></div>
