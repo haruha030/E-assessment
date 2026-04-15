@@ -127,10 +127,12 @@ td, th {
     left: 50%;
     transform: translate(-50%, -50%);
     background: #ffffff;
-    padding: 20px;
-    border-radius: 10px;
-    display: none;
-    width: 300px;
+    padding: 24px;
+    border-radius: 12px;
+    width: 520px;
+    max-height: 80vh;
+    overflow-y: auto;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.2);
 }
 
 .overlay {
@@ -141,6 +143,52 @@ td, th {
     bottom: 0;
     background: rgba(0,0,0,0.5);
     display: none;
+}
+
+/* Form layout */
+.form-grid {
+    display: grid;
+    grid-template-columns: 140px 1fr;
+    gap: 10px 16px;
+    align-items: center;
+}
+
+.form-section {
+    margin-top: 18px;
+    padding-top: 12px;
+    border-top: 1px solid #e5e7eb;
+}
+
+.form-section h4 {
+    margin: 0 0 10px 0;
+    font-size: 14px;
+    color: #64748b;
+}
+/* Inputs */
+input, select, textarea {
+    width: 100%;
+    padding: 6px 8px;
+    border: 1px solid #cbd5f5;
+    border-radius: 6px;
+    font-size: 13px;
+}
+
+textarea {
+    min-height: 70px;
+    resize: vertical;
+}
+
+/* Inline row */
+.inline-row {
+    display: flex;
+    gap: 10px;
+}
+
+/* Buttons */
+.popup-buttons {
+    display: flex;
+    justify-content: space-between;
+    margin-top: 20px;
 }
 </style>
 </head>
@@ -464,7 +512,7 @@ function renderMonth() {
 
     let table = "<table>";
 
-    // ✅ Weekday header
+    // Weekday header
     const weekdays = ["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
     table += "<tr>";
     weekdays.forEach(w => {
@@ -547,43 +595,96 @@ function showPopup(data, sheetName) {
 
     const grades = sheetName === "SheetK" ? GRADE_K : GRADE_P;
 
-    popup.innerHTML = `
-        <h3>${data.name}</h3>
+popup.innerHTML = `
+<h3 style="margin-bottom:15px;">${data.name}</h3>
 
-        Phone: <input id="phone" value="${data.phone}"><br>
-        SID: <input id="sid" value="${data.SID}"><br>
-        Name: <input id="name" value="${data.name}"><br>
+<div class="form-grid">
 
-        Hour: ${renderSelect("hour", HOURS, data.hour)}
-        Minute: ${renderSelect("minute", MINUTES, data.minute)}<br>
+    <label>Phone</label><input id="phone" value="${data.phone}">
+    <label>SID</label><input id="sid" value="${data.SID}">
+    <label>Name</label><input id="name" value="${data.name}">
 
-        Grade: ${renderSelect("grade", grades, data.grade)}<br>
-        Date: <input type="date" id="date" value="${data.date}"><br>
+</div>
 
-        School: <input id="school" value="${data.school}"><br>
+<div class="form-section">
+<h4>Time & Grade</h4>
+<div class="form-grid">
 
-        Language: ${renderSelect("language", LANGUAGES, data.language)}<br>
+    <label>Time</label>
+    <div class="inline-row">
+        ${renderSelect("hour", HOURS, data.hour)}
+        ${renderSelect("minute", MINUTES, data.minute)}
+    </div>
 
-        Status: ${renderSelect("status", STATUS_LIST, data.status)}<br>
+    <label>Grade</label>
+    ${renderSelect("grade", grades, data.grade)}
 
-        Handled by: ${renderSelect("handledBy", TEACHERS, data.handledBy)}<br>
-        Reported by: ${renderSelect("reportedBy", TEACHERS, data.reportedBy)}<br>
-        Instructor: ${renderSelect("instructor", TEACHERS, data.instructor)}<br>
+    <label>Date</label>
+    <input type="date" id="date" value="${data.date}">
 
-        Report Date: <input type="date" id="reportDate" value="${data.reportDate}"><br>
+</div>
+</div>
 
-        Called: <input type="checkbox" id="called" ${data.called?"checked":""}>
-        WhatsApp: <input type="checkbox" id="whatsapp" ${data.whatsapp?"checked":""}><br>
+<div class="form-section">
+<h4>School Info</h4>
+<div class="form-grid">
 
-        Response: ${renderSelect("response", RESPONSE_LIST, data.response)}<br>
+    <label>School</label><input id="school" value="${data.school}">
+    <label>Language</label>${renderSelect("language", LANGUAGES, data.language)}
 
-        Remarks:<br>
-        <textarea id="remarks">${data.remarks}</textarea><br>
+</div>
+</div>
 
+<div class="form-section">
+<h4>Status</h4>
+<div class="form-grid">
+
+    <label>Status</label>${renderSelect("status", STATUS_LIST, data.status)}
+
+</div>
+</div>
+
+<div class="form-section">
+<h4>People</h4>
+<div class="form-grid">
+
+    <label>Handled By</label>${renderSelect("handledBy", TEACHERS, data.handledBy)}
+    <label>Reported By</label>${renderSelect("reportedBy", TEACHERS, data.reportedBy)}
+    <label>Instructor</label>${renderSelect("instructor", TEACHERS, data.instructor)}
+
+</div>
+</div>
+
+<div class="form-section">
+<h4>Contact</h4>
+<div class="form-grid">
+
+    <label>Report Date</label><input type="date" id="reportDate" value="${data.reportDate}">
+
+    <label>Contact</label>
+    <div class="inline-row">
+        <label><input type="checkbox" id="called" ${data.called?"checked":""}> Called</label>
+        <label><input type="checkbox" id="whatsapp" ${data.whatsapp?"checked":""}> WhatsApp</label>
+    </div>
+
+    <label>Response</label>${renderSelect("response", RESPONSE_LIST, data.response)}
+
+</div>
+</div>
+
+<div class="form-section">
+<h4>Remarks</h4>
+<textarea id="remarks">${data.remarks}</textarea>
+</div>
+
+<div class="popup-buttons">
+    <div>
         <button class="update" onclick='updateRow(${JSON.stringify(data)}, "${sheetName}")'>Update</button>
         <button class="delete" onclick='deleteRow(${data.row}, "${sheetName}")'>Delete</button>
-        <button onclick="closePopup()">Close</button>
-    `;
+    </div>
+    <button onclick="closePopup()">Close</button>
+</div>
+`;
 
     popup.style.display = "block";
 }
