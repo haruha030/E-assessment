@@ -215,7 +215,15 @@ textarea {
             <input type="date" id="datePicker">
             <button onclick="changeDate(1)">➡</button>
         </div>
-
+<!-- Weekly options -->
+<div id="weeklyOptions" style="display:none; margin-bottom:10px;">
+    <label><input type="checkbox" id="opt_phone" checked> Phone</label>
+    <label><input type="checkbox" id="opt_handled" checked> Handled by</label>
+    <label><input type="checkbox" id="opt_remark" checked> Remark</label>
+    <label><input type="checkbox" id="opt_school" checked> School</label>
+    <label><input type="checkbox" id="opt_grade" checked> Grade</label>
+    <label><input type="checkbox" id="opt_reported" checked> Reported</label>
+</div>
         <!-- Weekly -->
         <div id="weekView"></div>
 
@@ -702,6 +710,11 @@ function showTab(tab) {
     document.getElementById("monthView").style.display = tab === 'month' ? "block" : "none";
     document.getElementById("addK").style.display = tab === 'addK' ? "block" : "none";
     document.getElementById("addP").style.display = tab === 'addP' ? "block" : "none";
+    document.getElementById("topbar").style.display =
+        (tab === "week" || tab === "month") ? "flex" : "none";
+
+    document.getElementById("weeklyOptions").style.display =
+        (tab === "week") ? "block" : "none";
     renderCurrentView();
 }
 
