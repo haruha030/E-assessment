@@ -555,10 +555,10 @@ function renderCell(data, date, sheetName) {
                     <b>${x.hour}:${x.minute}</b> | ${x.SID || ""} ${x.name}<br>
 
                     ${opts.grade ? `${x.grade}<br>` : ""}
-
+                    ${opts.handled && x.handledBy ? `(${x.handledBy} Handle)<br>` : ""}
                     ${opts.phone && x.phone ? `<b>Tel:</b> ${x.phone}<br>` : ""}
                     ${opts.school && x.school ? `<b>School:</b> ${x.school}<br>` : ""}
-                    ${opts.handled && x.handledBy ? `👨‍🏫 ${x.handledBy}<br>` : ""}
+
                     ${opts.reported && x.reportedBy ? `<b>Reported:</b> ${x.reportedBy}<br>` : ""}
                     ${opts.remark && x.remarks ? `<b>Remark:</b> ${x.remarks}<br>` : ""}
 
