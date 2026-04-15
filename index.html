@@ -509,7 +509,7 @@ function renderCell(data, date, sheetName) {
     const opts = getWeeklyOptions();
 
     const items = data
-        .filter(x => x.date === date && x.SID)
+        .filter(x => x.date === date)
         .sort((a, b) => {
             const t1 = parseInt(a.hour) * 60 + parseInt(a.minute);
             const t2 = parseInt(b.hour) * 60 + parseInt(b.minute);
