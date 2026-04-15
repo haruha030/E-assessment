@@ -103,6 +103,23 @@ td, th {
 .week-cell.auto-expand {
     height: auto;
 }
+
+#weeklyOptions {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+    padding: 8px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+}
+
+#weeklyOptions label {
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+}
 /* Booking button */
 .booking {
     color: white;
@@ -477,12 +494,59 @@ function normalizeDate(str) {
     return `${y}-${m}-${d}`;
 }
 
+function getWeeklyOptions() {
+    return {
+        phone: document.getElementById("opt_phone")?.checked,
+        handled: document.getElementById("opt_handled")?.checked,
+        remark: document.getElementById("opt_remark")?.checked,
+        school: document.getElementById("opt_school")?.checked,
+        grade: document.getElementById("opt_grade")?.checked,
+        reported: document.getElementById("opt_reported")?.checked
+    };
+}
+
 function renderCell(data, date, sheetName) {
+    const opts = getWeeklyOptions();
+
+    const items = data
+        .filter(x => x.date === date && x.SID)
+        .sort((a, b) => {
+            const t1 = parseInt(a.hour) * 60 + parseInt(a.minute);
+            const t2 = parseInt(b.hour) * 60 + parseInt(b.minute);
+            return t1 - t2;
+        });
+
     const items = data.filter(x => x.date === date);
 
     let cellClass = "week-cell";
     if (items.length > 3) cellClass += " auto-expand";
+    
+    return items.map(x => {
 
+        let color = "#3b82f6";
+        if (x.status.includes("✅")) color = "#22c55e";
+        if (x.status.includes("❌")) color = "#ef4444";
+
+        return `
+            <div class="booking"
+                 style="background:${color}"
+                 onclick='showPopup(${JSON.stringify(x)}, "${sheetName}")'>
+
+                <!-- ✅ TIME FIRST -->
+                <b>${x.hour}:${x.minute}</b> | ${x.SID || ""} ${x.name}<br>
+
+                ${opts.grade ? `${x.grade}<br>` : ""}
+
+                ${opts.phone && x.phone ? `📞 ${x.phone}<br>` : ""}
+                ${opts.school && x.school ? `🏫 ${x.school}<br>` : ""}
+                ${opts.handled && x.handledBy ? `👨‍🏫 ${x.handledBy}<br>` : ""}
+                ${opts.reported && x.reportedBy ? `📝 ${x.reportedBy}<br>` : ""}
+                ${opts.remark && x.remarks ? `💬 ${x.remarks}<br>` : ""}
+
+            </div>
+        `;
+    }).join("");
+    
     return `
         <div class="${cellClass}">
         ${items.map(x => {
@@ -494,10 +558,17 @@ function renderCell(data, date, sheetName) {
                 <div class="booking"
                      style="background:${color}"
                      onclick='showPopup(${JSON.stringify(x)}, "${sheetName}")'>
-                     
-                    ${x.status ? x.status + " " : ""}
-                    ${x.SID || ""} ${x.name}<br>
-                    ${x.grade} ${x.hour}:${x.minute}
+
+                     <b>${x.hour}:${x.minute}</b> | ${x.SID || ""} ${x.name}<br>
+
+                     ${opts.grade ? `${x.grade}<br>` : ""}
+
+                     ${opts.phone && x.phone ? `📞 ${x.phone}<br>` : ""}
+                     ${opts.school && x.school ? `🏫 ${x.school}<br>` : ""}
+                     ${opts.handled && x.handledBy ? `👨‍🏫 ${x.handledBy}<br>` : ""}
+                     ${opts.reported && x.reportedBy ? `📝 ${x.reportedBy}<br>` : ""}
+                     ${opts.remark && x.remarks ? `💬 ${x.remarks}<br>` : ""}
+
                 </div>
             `;
         }).join("")}
@@ -699,11 +770,6 @@ function changeDate(offset) {
     renderCurrentView();
 }
 
-document.getElementById("datePicker").onchange = e => {
-    currentDate = new Date(e.target.value);
-    renderCurrentView();
-};
-
 function showTab(tab) {
     currentTab = tab;
     document.getElementById("weekView").style.display = tab === 'week' ? "block" : "none";
@@ -830,6 +896,17 @@ document.getElementById("datePicker").onchange = e => {
     renderWeek();
     renderMonth();
 };
+
+document.getElementById("datePicker").onchange = e => {
+    currentDate = new Date(e.target.value);
+    renderCurrentView();
+};
+
+document.querySelectorAll("#weeklyOptions input").forEach(cb => {
+    cb.addEventListener("change", () => {
+        if (currentTab === "week") renderWeek();
+    });
+});
 
 loadData();
 </script>
