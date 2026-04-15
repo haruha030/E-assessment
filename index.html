@@ -749,11 +749,8 @@ function showTab(tab) {
     document.getElementById("monthView").style.display = tab === 'month' ? "block" : "none";
     document.getElementById("addK").style.display = tab === 'addK' ? "block" : "none";
     document.getElementById("addP").style.display = tab === 'addP' ? "block" : "none";
-    document.getElementById("topbar").style.display =
-        (tab === "week" || tab === "month") ? "flex" : "none";
-
-    document.getElementById("weeklyOptions").style.display =
-        (tab === "week") ? "block" : "none";
+    document.getElementById("topbar").style.display = (tab === "week" || tab === "month") ? "flex" : "none";
+    document.getElementById("weeklyOptions").style.display = tab === "week" ? "block" : "none";
     renderCurrentView();
 }
 
