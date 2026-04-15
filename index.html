@@ -516,8 +516,6 @@ function renderCell(data, date, sheetName) {
             return t1 - t2;
         });
 
-    const items = data.filter(x => x.date === date);
-
     let cellClass = "week-cell";
     if (items.length > 3) cellClass += " auto-expand";
     
