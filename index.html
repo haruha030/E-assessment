@@ -175,9 +175,36 @@ td, th {
 <div id="addK" style="display:none;">
 <h2>Add Booking (K)</h2>
 
-SID: <input id="k_sid"><br>
-Name: <input id="k_name"><br>
-Phone: <input id="k_phone"><br>
+        Phone: <input id="k_phone" ><br>
+        SID: <input id="k_sid"><br>
+        Name: <input id="k_name"><br>
+
+       <!-- Hour: ${renderSelect("k_hour", HOURS, data.hour)}
+        Minute: ${renderSelect("k_minute", MINUTES, data.minute)}<br>
+
+        Grade: ${renderSelect("k_grade", grades, data.grade)}<br>-->
+        Date: <input type="date" id="k_date"><br>
+
+        School: <input id="k_school" value="${data.school}"><br>
+
+        <!--Language: ${renderSelect("k_language", LANGUAGES, data.language)}<br>
+
+        Status: ${renderSelect("k_status", STATUS_LIST, data.status)}<br>
+
+        Handled by: ${renderSelect("k_handledBy", TEACHERS, data.handledBy)}<br>
+        Reported by: ${renderSelect("k_reportedBy", TEACHERS, data.reportedBy)}<br>
+        Instructor: ${renderSelect("k_instructor", TEACHERS, data.instructor)}<br>-->
+
+        Report Date: <input type="date" id="k_reportDate" value="${data.reportDate}"><br>
+
+        Called: <input type="checkbox" id="k_called" ${data.called?"checked":""}>
+        WhatsApp: <input type="checkbox" id="k_whatsapp" ${data.whatsapp?"checked":""}><br>
+
+        <!--Response: ${renderSelect("k_response", RESPONSE_LIST, data.response)}<br>-->
+
+        Remarks:<br>
+        <textarea id="k_remarks">${data.remarks}</textarea><br>
+
 
 Grade:
 <select id="k_grade">
@@ -241,6 +268,24 @@ const SHEET_P_NAME = "P1/G1-S6/G13";
 const SHEET_K_URL = "https://docs.google.com/spreadsheets/d/1Df_gvXcyANilmcuPoxQHS_k02soH115dzWhbEWfev2Y/gviz/tq?tqx=out:csv&sheet=PN-K3/K-MO";
 const SHEET_P_URL = "https://docs.google.com/spreadsheets/d/1Df_gvXcyANilmcuPoxQHS_k02soH115dzWhbEWfev2Y/gviz/tq?tqx=out:csv&sheet=P1/G1-S6/G13";
 
+const HOURS = ["09","10","11","12","13","14","15","16","17","18","19"];
+const MINUTES = ["00","15","30","45"];
+
+const LANGUAGES = ["CHI","ENG"];
+
+const STATUS_LIST = ["","✅ ","❌","🤔💭","🈚️","🔄"];
+
+const RESPONSE_LIST = ["","Waiting","Timeslot Sent","Enrolled","Considering","No Answer"];
+
+const TEACHERS = ["Teacher A","Teacher B","Teacher C"];
+
+const GRADE_K = ["PN","K1","K2","K3","G1"];
+const GRADE_P = [
+"P1","P2","P3","P4","P5","P6",
+"F1","F2","F3","F4","F5","F6",
+"Y1","Y2","Y3","Y4","Y5","Y6","Y7","Y8","Y9","Y10","Y11","Y12","Y13"
+];
+    
 let dataK = [];
 let dataP = [];
 let currentDate = new Date();
@@ -271,19 +316,38 @@ function clean(v) {
 }
 
 function parseCSV(text) {
-    const rows = text.split("\n").map(r => r.split(","));
+    const rows = text.split("\n").map(r => r.split(/,(?=(?:(?:[^"]*"){2})*[^"]*$)/));
+
     return rows.slice(1).map((r, i) => ({
         row: i + 2,
+
+        phone: clean(r[0]),
         SID: clean(r[1]),
         name: clean(r[2]),
-        phone: clean(r[0]),
-        grade: clean(r[6]),
-        remark: clean(r[4]),
-        date: normalizeDate(clean(r[7])),
+
         hour: clean(r[4]),
         minute: clean(r[5]),
+        grade: clean(r[6]),
+
+        rawDate: clean(r[7]),
+        date: normalizeDate(clean(r[7])),
+
+        school: clean(r[9]),
+        language: clean(r[10]),
+        asstLv: clean(r[11]),
         status: clean(r[12]),
-        instructor: clean(r[13])
+
+        handledBy: clean(r[13]),
+        reportedBy: clean(r[14]),
+        instructor: clean(r[15]),
+
+        reportDate: clean(r[16]),
+
+        called: clean(r[17]) === "TRUE",
+        whatsapp: clean(r[18]) === "TRUE",
+
+        response: clean(r[19]),
+        remarks: clean(r[23])
     }));
 }
 
@@ -469,21 +533,53 @@ function syncDatePicker() {
     document.getElementById("datePicker").value =
         currentDate.toISOString().split("T")[0];
 }
+
+function renderSelect(id, list, value="") {
+    return `<select id="${id}">
+        ${list.map(v => `<option ${v===value?"selected":""}>${v}</option>`).join("")}
+    </select>`;
+}
+
 // ===== Popup =====
 function showPopup(data, sheetName) {
     document.querySelector(".overlay").style.display = "block";
     const popup = document.getElementById("popup");
 
+    const grades = sheetName === "SheetK" ? GRADE_K : GRADE_P;
+
     popup.innerHTML = `
         <h3>${data.name}</h3>
 
-        Grade: <input id="grade" value="${data.grade}"><br>
-        Hour: <input id="hour" value="${data.hour}"><br>
-        Minute: <input id="minute" value="${data.minute}"><br>
-        Status: <input id="status" value="${data.status}"><br>
-        Instructor: <input id="instructor" value="${data.instructor}"><br>
+        Phone: <input id="phone" value="${data.phone}"><br>
+        SID: <input id="sid" value="${data.SID}"><br>
+        Name: <input id="name" value="${data.name}"><br>
 
-        <br>
+        Hour: ${renderSelect("hour", HOURS, data.hour)}
+        Minute: ${renderSelect("minute", MINUTES, data.minute)}<br>
+
+        Grade: ${renderSelect("grade", grades, data.grade)}<br>
+        Date: <input type="date" id="date" value="${data.date}"><br>
+
+        School: <input id="school" value="${data.school}"><br>
+
+        Language: ${renderSelect("language", LANGUAGES, data.language)}<br>
+
+        Status: ${renderSelect("status", STATUS_LIST, data.status)}<br>
+
+        Handled by: ${renderSelect("handledBy", TEACHERS, data.handledBy)}<br>
+        Reported by: ${renderSelect("reportedBy", TEACHERS, data.reportedBy)}<br>
+        Instructor: ${renderSelect("instructor", TEACHERS, data.instructor)}<br>
+
+        Report Date: <input type="date" id="reportDate" value="${data.reportDate}"><br>
+
+        Called: <input type="checkbox" id="called" ${data.called?"checked":""}>
+        WhatsApp: <input type="checkbox" id="whatsapp" ${data.whatsapp?"checked":""}><br>
+
+        Response: ${renderSelect("response", RESPONSE_LIST, data.response)}<br>
+
+        Remarks:<br>
+        <textarea id="remarks">${data.remarks}</textarea><br>
+
         <button class="update" onclick='updateRow(${JSON.stringify(data)}, "${sheetName}")'>Update</button>
         <button class="delete" onclick='deleteRow(${data.row}, "${sheetName}")'>Delete</button>
         <button onclick="closePopup()">Close</button>
@@ -537,17 +633,30 @@ function renderCurrentView() {
 const API_URL = "https://script.google.com/macros/s/AKfycbxh_7Un90N99oknc7Kz52VtUjoeyPjsbI-NgC98vToVXFPIMS0v82m6XNKY6ZM8WBIA4w/exec";
 
 async function updateRow(data, sheet) {
+
     const values = [
-        data.SID,
-        data.name,
-        data.phone,
-        document.getElementById("grade").value,
-        data.remark,
-        data.rawDate || data.date,
+        document.getElementById("phone").value,
+        document.getElementById("sid").value,
+        document.getElementById("name").value,
+        "", // formula col
         document.getElementById("hour").value,
         document.getElementById("minute").value,
+        document.getElementById("grade").value,
+        document.getElementById("date").value,
+        "", // formula col
+        document.getElementById("school").value,
+        document.getElementById("language").value,
+        "", // asst lv (keep formula if needed)
         document.getElementById("status").value,
-        document.getElementById("instructor").value
+        document.getElementById("handledBy").value,
+        document.getElementById("reportedBy").value,
+        document.getElementById("instructor").value,
+        document.getElementById("reportDate").value,
+        document.getElementById("called").checked,
+        document.getElementById("whatsapp").checked,
+        document.getElementById("response").value,
+        "", "", "",
+        document.getElementById("remarks").value
     ];
 
     await fetch(API_URL, {
@@ -560,7 +669,6 @@ async function updateRow(data, sheet) {
         })
     });
 
-    alert("Updated!");
     loadData();
 }
 
@@ -581,16 +689,28 @@ async function addRow(type) {
     const prefix = type.toLowerCase();
 
     const values = [
+        document.getElementById(prefix+"_phone").value,
         document.getElementById(prefix+"_sid").value,
         document.getElementById(prefix+"_name").value,
-        document.getElementById(prefix+"_phone").value,
-        document.getElementById(prefix+"_grade").value,
-        "",
-        document.getElementById(prefix+"_date").value,
+        "", // formula col
         document.getElementById(prefix+"_hour").value,
-        document.getElementById(prefix+"_min").value,
+        document.getElementById(prefix+"_minute").value,
+        document.getElementById(prefix+"_grade").value,
+        document.getElementById(prefix+"_date").value,
+        "", // formula col
+        document.getElementById(prefix+"_school").value,
+        document.getElementById(prefix+"_language").value,
+        "", // asst lv (keep formula if needed)
         document.getElementById(prefix+"_status").value,
-        document.getElementById(prefix+"_ins").value
+        document.getElementById(prefix+"_handledBy").value,
+        document.getElementById(prefix+"_reportedBy").value,
+        document.getElementById(prefix+"_instructor").value,
+        document.getElementById(prefix+"_reportDate").value,
+        document.getElementById(prefix+"_called").checked,
+        document.getElementById(prefix+"_whatsapp").checked,
+        document.getElementById(prefix+"_response").value,
+        "", "", "",
+        document.getElementById(prefix+"_remarks").value
     ];
 
     await fetch(API_URL, {
