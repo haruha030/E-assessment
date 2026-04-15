@@ -2,32 +2,10 @@ Read all columns
 Headers
 Phone | SID | student name | empty | hour | minutes | Grade | Date | empty | school | chi/eng | Asst. Lv | status | Handled by (who do) | Reported by | Instructor | Date of report | Called | Whatsapped | Response | Asst. Location | Follow-up | Date of Follow-up | Remarks
 
-Finish form UI
-hour dropdown (09-19)
-minutes dropdown (00, 15, 30, 45)
-grade dropdown (P1-P6,F1-F6),(Y1-Y13), (PN,K1-K3,G1)
-Date datepicker
-School Textfield?
-Chi/eng select
-Asst. Lv (L1-L9, IGCSE, DSE1-3, IB1-3)
-status dropdown ("","✅ ","❌","🤔💭", "🈚️","🔄")
-Handled by dropdown Instructor list
-Reported by Instructor list
-Instructor dropdown Instructor list
-Date of report datepicker
-Called checkbox?
-Whatsapped checkbox?
-Response ("", Waiting, Timeslot Sent, Enrolled, Considering, No Answer)
-Asst. Location empty?
-Follow-up empty?
-Date of Follow-up empty?
-Remarks
 
-Finish the pop up form as well
-
-Finish add row function
-Finish remove function
-Finish update function
+Debug add row function 
+Debug remove function
+Debug update function
 Add overlay before finishing the functions
 
 Finish select views
