@@ -133,6 +133,7 @@ td, th {
     max-height: 80vh;
     overflow-y: auto;
     box-shadow: 0 10px 30px rgba(0,0,0,0.2);
+    display: none;
 }
 
 .overlay {
@@ -603,7 +604,7 @@ popup.innerHTML = `
     <label>Phone</label><input id="phone" value="${data.phone}">
     <label>SID</label><input id="sid" value="${data.SID}">
     <label>Name</label><input id="name" value="${data.name}">
-
+    <label>Handled By</label>${renderSelect("handledBy", TEACHERS, data.handledBy)}
 </div>
 
 <div class="form-section">
@@ -640,25 +641,8 @@ popup.innerHTML = `
 <div class="form-grid">
 
     <label>Status</label>${renderSelect("status", STATUS_LIST, data.status)}
-
-</div>
-</div>
-
-<div class="form-section">
-<h4>People</h4>
-<div class="form-grid">
-
-    <label>Handled By</label>${renderSelect("handledBy", TEACHERS, data.handledBy)}
     <label>Reported By</label>${renderSelect("reportedBy", TEACHERS, data.reportedBy)}
-    <label>Instructor</label>${renderSelect("instructor", TEACHERS, data.instructor)}
-
-</div>
-</div>
-
-<div class="form-section">
-<h4>Contact</h4>
-<div class="form-grid">
-
+    <label>Instructor (if enrolled)</label>${renderSelect("instructor", TEACHERS, data.instructor)}
     <label>Report Date</label><input type="date" id="reportDate" value="${data.reportDate}">
 
     <label>Contact</label>
