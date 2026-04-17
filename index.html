@@ -667,7 +667,7 @@ function showPopup(data, sheetName) {
     const popup = document.getElementById("popup");
 
     const grades = sheetName === "SheetK" ? GRADE_K : GRADE_P;
-
+    const sheetExcelName = sheetName === "SheetK" ? "PN-K3/K-MO" : "P1/G1-S6/G13";
 popup.innerHTML = `
 <h3 style="margin-bottom:15px;">${data.name}</h3>
 
@@ -735,8 +735,8 @@ popup.innerHTML = `
 
 <div class="popup-buttons">
     <div>
-        <button class="update" onclick='updateRow(${JSON.stringify(data)}, "${sheetName}")'>Update</button>
-        <button class="delete" onclick='deleteRow(${data.row}, "${sheetName}")'>Delete</button>
+        <button class="update" onclick='updateRow(${JSON.stringify(data)}, "${sheetExcelName}")'>Update</button>
+        <button class="delete" onclick='deleteRow(${data.row}, "${sheetExcelName}")'>Delete</button>
     </div>
     <button onclick="closePopup()">Close</button>
 </div>
